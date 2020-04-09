@@ -1,0 +1,1 @@
+# R script where we can test all of our functions/manipulate data before pasting in Shinyapp
