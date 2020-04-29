@@ -1,0 +1,130 @@
+---
+title: "econ401 final project R Notebook"
+output: html_notebook
+---
+
+Libraries:
+```{r libraries, results = "markup"}
+library(tidyverse)
+library(readr)
+library(rvest)
+library(stats)
+library(readxl)
+library(dplyr)
+library(stringr)
+library(ggplot2)
+library(ggthemes)
+library(stringr)
+```
+
+Data:
+```{r data, results = "markup"}
+# GDP up to Feb 2020
+# https://ihsmarkit.com/products/us-monthly-gdp-index.html
+gdp.index.data <- readxl::read_xlsx('US-Monthly-GDP-History-Data.xlsx', sheet = 3)
+gdp.index <- gdp.index.data
+colnames(gdp.index)[1] <- "Y_M"
+year.month <- str_split_fixed(gdp.index$Y_M, ' - ', 2)
+colnames(year.month) <- c('Year', 'Month')
+gdp.index <- cbind(year.month, gdp.index[, -1])
+gdp.annual <- gdp.index %>%
+  group_by(Year) %>%
+  summarize(MaxGDP = max(`Monthly Real GDP Index`),
+            MinGDP = min(`Monthly Real GDP Index`))
+
+# https://nces.ed.gov/programs/digest/d18/tables/dt18_306.10.asp
+enrollment.data <- read_xls('tabn306.10.xls')
+enrollment <- enrollment.data[1:12]
+# enrollment is in thousands
+enrollment <- enrollment[-c(1, 3, 15, 27, 39, 51, 63, 75, 99, 111, 123, 135:139), ]
+col1 <- data.frame(str_remove_all(enrollment[[1]], '\\.'), stringsAsFactors = FALSE)
+col1[2, 1] <- "All_Students"
+enrollment <- cbind(col1, enrollment[, -1])
+enrollment <- t(enrollment)
+rownames(enrollment) <- c()
+colnames(enrollment) <- enrollment[1, ]
+enrollment <- data.frame(enrollment)
+colnames(enrollment)[1] <- 'Year'
+enrollment <- enrollment[-1, ]
+Years <- as.numeric(str_extract(enrollment$Year, "[:digit:]{4}"))
+enrollment <- cbind(Years, enrollment[, -1])
+enrollment <- data.frame(lapply(enrollment, function(x){ 
+  gsub("---", NA, x)
+}))
+str(enrollment)
+
+enrollment1 <- enrollment[, 1:2]
+gdp.annual1 <- gdp.annual
+all.students <- as.numeric(enrollment[4:11, 2])
+
+gdp.annual$Year <- as.factor(gdp.annual$Year)
+enrollment1$Years <- as.factor(enrollment1$Years)
+enrollment1$All_Students <- as.numeric(as.character(enrollment1$All_Students))
+```
+
+Model 3:
+
+  First making a graph of annual GDP highs and lows -- maybe a temporary proxy for recessions?
+```{r graph1}
+gdp.annual %>%
+  ggplot() +
+  geom_line(mapping = aes(x = Year,
+                 y = MaxGDP,
+                 group = 1)) +
+  geom_line(mapping = aes(x = Year,
+                          y = MinGDP,
+                          group = 1)) +
+  theme_economist() +
+  ylab('Real GDP')
+```
+
+  Annual enrollment graph:
+```{r graph2}
+enrollment1 %>%
+  ggplot() +
+  geom_line(mapping = aes(x = Years,
+                          y = All_Students,
+                          group = 1)) +
+  theme_economist() +
+  ylab('Enrollment')
+```
+
+  Join enrollment data and gdp data to create linear model test:
+```{r lm1}
+test <- inner_join(enrollment1, gdp.annual1,
+          by = c("Years" = "Year"))
+
+lm1 <- lm(All_Students ~ MaxGDP,
+          data = test,
+          na.action = na.omit)
+summary(lm1)
+```
+
+  Graph it?
+```{r graph3_4}
+test %>%
+  ggplot() +
+  geom_line(aes(x = Years,
+                 y = All_Students,
+                group = 1)) +
+  theme_economist() +
+  ylab('Enrollment by All Students')
+
+test %>%
+  ggplot() +
+  geom_line(aes(x = Years,
+                 y = MaxGDP,
+                 group = 1)) +
+  # geom_abline(slope = 0.8015, intercept = 6316.7207) +
+  theme_economist()
+```
+
+
+
+
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
