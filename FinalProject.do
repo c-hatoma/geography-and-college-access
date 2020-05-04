@@ -203,10 +203,18 @@ twoway (scatter kfr_black_pooled_p1 ncollege) (lfit kfr_black_pooled_p1 ncollege
 ssc install outreg2
 cd "$OUTPUT"
 
+* in the output tables I uploaded, each file has the regressions for one X variable. There are 6 X variables in total (ncollege, nfouryr, nfouryrpriv, npub, nelite, and hascollege)
+* ex. the "ncollege.xlsx" file has the results for:
+* 1) kfr_pooled_pooled, 2) kfr_top20_pooled_pooled, 3) kfr_white_pooled, and 4) kfr_black_pooled
+* each sheet has 5 columns with regressions for each of the parental percentiles, 1) bottom 1, 2) 25%, 3) 50%, 4) 75%, 5) top percentile
+* so in total each file has 4 sheets with 5 regressions each.
 
+
+*** 1 ***
 * regressions of Y =  kfr_pooled_pooled_[percentile = p1, p25, p50, p75, and p100], or the predicted mean percentile rank given parent income
 * on X = type of college (ncollege, nfouryr, nfouryrpriv, npub, nelite, and hascollege). For kids of all races and all genders
 * controls are population density 2010 and median household income 2016
+* the output is 6 separate sheets of 5 regressions each, one for each percentile of the variable
 
 foreach x of varlist ncollege nfouryr nfouryrpriv npub nelite hascollege{
 	
@@ -217,7 +225,7 @@ foreach y of varlist kfr_pooled_pooled_p1 kfr_pooled_pooled_p25 kfr_pooled_poole
 
 }
 
-
+*** 2 ***
 * regressions of Y =  kfr_top20_pooled_pooled_[percentile = p1, p25, p50, p75, and p100], or the predicted probability 
 * that the child with parents from the given percentile rank make it to the top 20%
 * on X = type of college (ncollege, nfouryr, nfouryrpriv, npub, nelite, and hascollege). For kids of all races and all genders
@@ -233,7 +241,7 @@ foreach y of varlist kfr_top20_pooled_pooled_p1 kfr_top20_pooled_pooled_p25 kfr_
 }
 
 
-
+*** 3 ***
 * regressions of Y =  kfr_white_pooled_[percentile = p1, p25, p50, p75, and p100], or the predicted mean percentile rank given parent income
 * on X = type of college (ncollege, nfouryr, nfouryrpriv, npub, nelite, and hascollege). For kids who are WHITE of all genders
 * controls are population density 2010 and median household income 2016
@@ -247,6 +255,7 @@ foreach y of varlist kfr_white_pooled_p1 kfr_white_pooled_p25 kfr_white_pooled_p
 
 }
 
+*** 4 ***
 * regressions of Y =  kfr_black_pooled_[percentile = p1, p25, p50, p75, and p100], or the predicted mean percentile rank given parent income
 * on X = type of college (ncollege, nfouryr, nfouryrpriv, npub, nelite, and hascollege). For kids who are BLACK of all genders
 * controls are population density 2010 and median household income 2016
