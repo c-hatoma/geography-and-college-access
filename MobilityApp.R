@@ -44,25 +44,33 @@ ui <- fluidPage(
   titlePanel("College Proximity and Mobility in the U.S."),
   mainPanel(
     tabsetPanel(
-      tabPanel("Tab1",
+      tabPanel("Geographic Analysis",
                selectInput(inputId = "input1",
-                           label = "Select a City",
+                           label = "Select a Topic to Map",
                            choices = mapinputs),
                leafletOutput(outputId = "map1", width = "150%")), 
-      tabPanel("Tab2", 
-               dataTableOutput(outputId = "table1"))),
+      tabPanel("Regression Outputs", 
+               dataTableOutput(outputId = "table1")),
+      tabPanel("Analysis",
+               fluidRow(
+                 h4("What do we expect to happen when rent controls are implemented?"),
+                 p('Rent control can also lead to "mis-match" between tenants and rental units. 
+                             Once a tenant has secured a rent-controlled apartment, 
+                             he may not choose to move in the future and give up his rent control, 
+                             even if his housing needs change 
+                             (Suen 1980, Glaeser and Luttmer 2003, Sims 2011, Bulow and Klemperer 2012).')))
   )
   
-)
+))
 
 server <- function(input, output) {
   
   output$map1 <- renderLeaflet({
     
-    title1 <- input1
+    title1 <- input$input1
     
     mapchoice <- mapchoices %>%
-      filter(mapinputs == input1)
+      filter(mapinputs == input$input1)
     
     mapvar <- mapchoice[2]
     
@@ -70,7 +78,7 @@ server <- function(input, output) {
     
     colors1 <- colorBin(bins = bins1,
                         palette = "YlOrRd",
-                        domain = cz.geo@data$mapvar)
+                        domain = cz.geo@data$ncollege)
     
     cz.geo %>%
       leaflet() %>%
