@@ -14,8 +14,6 @@ global OUTPUT "$dir\OUTPUT"
 
 cd "$DATA"
 
-*** NOTE TO CHICA - ignore everything from here until line 160 ****
-
 
 * edit and merge the data into one dataset
 local create = 0
@@ -157,8 +155,6 @@ twoway (scatter absmeddiff par_median) (lfit absmeddiff par_median), by(mytier)
 graph export "mobilityParentbyTier.png", as(png) replace
 
 }
-
-
 ****************** Summary Figures and Tables ??? *************************
 cd "$DATA"
 use "cz.dta", clear
@@ -169,52 +165,31 @@ use "cz.dta", clear
 
 * p1 = lowest percentile, p100 is the highest percentile
 
-* create a summary stats table
-
+* summary stats table
+ssc install outreg2
 cd "$OUTPUT"
-outreg2 using sumstats, excel replace sum(log) keep(kfr_pooled_pooled_p1 kfr_pooled_pooled_p25 kfr_pooled_pooled_p50 kfr_pooled_pooled_p75 kfr_pooled_pooled_p100 kfr_top20_pooled_pooled_p50 coll_pooled_pooled_mean  popdensity2010 med_hhinc2016 ncollege nfouryr nfouryrpriv npub nelite)
+outreg2 using sumstats, excel replace sum(log) keep(kfr_pooled_pooled_p1 kfr_pooled_pooled_p25 kfr_pooled_pooled_p50 kfr_pooled_pooled_p75 kfr_pooled_pooled_p100 kfr_black_pooled_p50 kfr_white_pooled_p50 kfr_top20_pooled_pooled_p50 coll_pooled_pooled_mean  popdensity2010 med_hhinc2016 ncollege nfouryr nfouryrpriv npub nelite hascollege)
 
 
-* make some figures - just playing around here but feel free to check them out
+* figures 
 
-* a scatterplot of kfr_pooled_pooled_mean(y), which is the predictedmean household income rank of children, and n college (x) with a line of best fit
-* I would probably use the median instead of the mean bc I think it's easier to interpret
 
 twoway (scatter kfr_pooled_pooled_mean ncollege) (lfit kfr_pooled_pooled_mean ncollege)
 
-* a scatterplot of kir_pooled_pooled_mean(y), which is the predicted mean individual income rank of children, and n college (x) with a line of best fit
-* I would probably use the median instead of the mean bc I think it's easier to interpret
-
 twoway (scatter kir_pooled_pooled_mean ncollege) (lfit kir_pooled_pooled_mean ncollege)
-
-* a scatterplot of lpov_nbh_pooled_pooled_mean(y) and n college (x) with a line of best fit
 
 twoway (scatter lpov_nbh_pooled_pooled_mean ncollege) (lfit lpov_nbh_pooled_pooled_mean ncollege)
 
 * play around with different combinations - so many possible combinations 
-* a scatterplot of kfr_black_pooled_p1 (y) and ncollege (x) with a line of best fit. 
-*The Y variable is predicted household income of black kids from the bottom 1%
-
 twoway (scatter kfr_black_pooled_p1 ncollege) (lfit kfr_black_pooled_p1 ncollege)
 
 
 
 ************************* Regressions **********************************
-ssc install outreg2
+
 cd "$OUTPUT"
 
-* in the output tables I uploaded, each file has the regressions for one X variable. There are 6 X variables in total (ncollege, nfouryr, nfouryrpriv, npub, nelite, and hascollege)
-* ex. the "ncollege.xlsx" file has the results for:
-* 1) kfr_pooled_pooled, 2) kfr_top20_pooled_pooled, 3) kfr_white_pooled, and 4) kfr_black_pooled
-* each sheet has 5 columns with regressions for each of the parental percentiles, 1) bottom 1, 2) 25%, 3) 50%, 4) 75%, 5) top percentile
-* so in total each file has 4 sheets with 5 regressions each.
-
-
-*** 1 ***
-* regressions of Y =  kfr_pooled_pooled_[percentile = p1, p25, p50, p75, and p100], or the predicted mean percentile rank given parent income
-* on X = type of college (ncollege, nfouryr, nfouryrpriv, npub, nelite, and hascollege). For kids of all races and all genders
-* controls are population density 2010 and median household income 2016
-* the output is 6 separate sheets of 5 regressions each, one for each percentile of the variable
+* regressions using Y =  kfr_pooled_pooled_[percentile], or the predicted mean percentile rank given parent income, X = n [type of] colleges
 
 foreach x of varlist ncollege nfouryr nfouryrpriv npub nelite hascollege{
 	
@@ -225,11 +200,8 @@ foreach y of varlist kfr_pooled_pooled_p1 kfr_pooled_pooled_p25 kfr_pooled_poole
 
 }
 
-*** 2 ***
-* regressions of Y =  kfr_top20_pooled_pooled_[percentile = p1, p25, p50, p75, and p100], or the predicted probability 
-* that the child with parents from the given percentile rank make it to the top 20%
-* on X = type of college (ncollege, nfouryr, nfouryrpriv, npub, nelite, and hascollege). For kids of all races and all genders
-* controls are population density 2010 and median household income 2016
+
+* regressions using Y =  kfr_top20_pooled_pooled_[percentile], or the predicted mean percentile rank given parent income, X = n [type of] colleges
 
 foreach x of varlist ncollege nfouryr nfouryrpriv npub nelite hascollege{
 	
@@ -241,10 +213,7 @@ foreach y of varlist kfr_top20_pooled_pooled_p1 kfr_top20_pooled_pooled_p25 kfr_
 }
 
 
-*** 3 ***
-* regressions of Y =  kfr_white_pooled_[percentile = p1, p25, p50, p75, and p100], or the predicted mean percentile rank given parent income
-* on X = type of college (ncollege, nfouryr, nfouryrpriv, npub, nelite, and hascollege). For kids who are WHITE of all genders
-* controls are population density 2010 and median household income 2016
+* regressions using Y =  kfr_WHITE_pooled_[percentile], or the predicted mean percentile rank given parent income, X = n [type of] colleges
 
 foreach x of varlist ncollege nfouryr nfouryrpriv npub nelite hascollege{
 	
@@ -255,10 +224,7 @@ foreach y of varlist kfr_white_pooled_p1 kfr_white_pooled_p25 kfr_white_pooled_p
 
 }
 
-*** 4 ***
-* regressions of Y =  kfr_black_pooled_[percentile = p1, p25, p50, p75, and p100], or the predicted mean percentile rank given parent income
-* on X = type of college (ncollege, nfouryr, nfouryrpriv, npub, nelite, and hascollege). For kids who are BLACK of all genders
-* controls are population density 2010 and median household income 2016
+* regressions using Y =  kfr_BLACK_pooled_[percentile], or the predicted mean percentile rank given parent income, X = n [type of] colleges
 
 foreach x of varlist ncollege nfouryr nfouryrpriv npub nelite hascollege{
 	
