@@ -19,7 +19,7 @@ library(ggimage)
 
 # read data ---------------------------------------------------------------
 
-setwd("C:/Users/neris/OneDrive - Middlebury College/Last Semester/ECON Inequality & Justice/econ0401")
+#setwd("C:/Users/neris/OneDrive - Middlebury College/Last Semester/ECON Inequality & Justice/econ0401")
 
 cz.geo <- geojson_read("cz_geo.geojson",
                        what = "sp")
@@ -41,6 +41,35 @@ ui <- fluidPage(
   titlePanel("College Proximity and Mobility in the U.S."),
   mainPanel(
     tabsetPanel(
+      tabPanel("Intro",
+               mainPanel(
+                 h2("Introduction"),
+                 p("The United States has high levels of inequality. One reason Americans may tolerate this is because of the American Dream, 
+                 the idea that an individual may increase their social standing through hard work. 
+                 However, social mobility and inequality are inversely linked (Wilkinson and Pickett 2009), 
+                 which means that the high levels of inequality in the US also mean low levels of social mobility. 
+                 Education is often seen as the key to upward social mobility, as a college degree can open doors to higher-paying jobs (Greenstone et. al 2013). 
+                 "),
+                 p("Inspired by Wilkinson and Pickett, our research examines the effect of college accessibility on social mobility. 
+                   Are commuting zones with colleges more likely to have higher rates of social mobility than those that do not? 
+                   Living near a college and college attendance are correlated (Currie and Moretti 2003). 
+                   If there are more college graduates in an area, they increase the relative social mobility of the area. 
+                   This relationship is important because it affects the opportunity costs of going to college for both the poor and wealthy students. 
+                   If attending college does not change social mobility, then the poor have little incentive to go to college if their circumstances will not improve, 
+                   whereas the rich also may not have to go to college to maintain their wealth. "))
+               ),
+      tabPanel("Model",
+        mainPanel(
+          h2("Empirical Model"),
+          p("We use a simple Ordinary Least Squares (OLS) regression to test the relationship between number of colleges and social mobility. 
+            Our estimating equation is: "),
+          #### INSERT AND IMAGE OF THE ESTIMATING EQUATION PLEASE HELP!! FILE IS CALLED "equation.png"
+          p("Where Yi = the social mobility estimate for a given parent income rank, either kfr, kfr_black, kfr_white, or kfr_top20 
+            for a commuting zone i. Xi is the number of colleges, four year colleges, four year private colleges, elite schools, public schools,
+            or binary indicator for any college in a commuting zone. PopDensity is the population density in 2010, 
+            and Med_hhinc is the median household income in 2016. We control for population density and median household income in 2016, 
+            two factors that would plausibly impact both the presence of colleges in an area and the level of social mobility.")
+        )),
       tabPanel("Geographic Analysis",
                radioButtons("map", "Select a Topic to Map:",
                             c("Number of Colleges in Commuting Zone", "Other")),
