@@ -169,30 +169,62 @@ cz.geojson <- geojson_read("cz1990.json",
 Commuting zones on the map (cz.geojson@data) are in 1990s format. They need to be converted so our post-2000 data can be connected to the shapefiles:
 (https://www.ers.usda.gov/data-products/commuting-zones-and-labor-market-areas/)
 ```{r cz shape combine, include = FALSE}
-cz.conversions <- read_xls('cz00_eqv_v1.xls')
-cz.conversions <- cz.conversions[, c(2:4)]
-cz.conversions$`Commuting Zone ID, 1990` <- as.numeric(cz.conversions$`Commuting Zone ID, 1990`)
-cz.conversions$`Commuting Zone ID, 1980` <- as.numeric(cz.conversions$`Commuting Zone ID, 1980`)
-colnames(cz.conversions)[2] <- 'cz1990'
-colnames(cz.conversions)[1] <- 'cz2000'
-colnames(cz.conversions)[3] <- 'cz1980'
+# cz.conversions <- read_xls('cz00_eqv_v1.xls')
+# cz.conversions <- cz.conversions[, c(2:4)]
+# cz.conversions$`Commuting Zone ID, 1990` <- as.numeric(cz.conversions$`Commuting Zone ID, 1990`)
+# cz.conversions$`Commuting Zone ID, 1980` <- as.numeric(cz.conversions$`Commuting Zone ID, 1980`)
+# colnames(cz.conversions)[2] <- 'cz1990'
+# colnames(cz.conversions)[1] <- 'cz2000'
+# colnames(cz.conversions)[3] <- 'cz1980'
+# 
+# head(cz.geojson@data)
+# cz.geo <- cz.geojson
+# colnames(cz.mobility)[1] <- 'cz1990'
+# 
+# cz.geo@data <- full_join(cz.geo@data,
+#                   cz.conversions[, -3],
+#                   by = c('cz' = 'cz1990'))
+# cz.geo@data <- left_join(cz.geo@data,
+#                          cz.mobility,
+#                          by = c('cz' = 'cz1990'))
+# 
+# cz.geo %>%
+#   leaflet() %>%
+#   addPolygons() %>%
+#   setView(-96, 37.8, 3)
 
-head(cz.geojson@data)
-cz.geo <- cz.geojson
-colnames(cz.mobility)[1] <- 'cz1990'
+# geojson_write(cz.geo,
+#               file = "cz_geo.geojson",
+#               overwrite = TRUE)
 
-cz.geo@data <- full_join(cz.geo@data,
-                  cz.conversions[, -3],
-                  by = c('cz' = 'cz1990'))
-cz.geo@data <- left_join(cz.geo@data,
-                         cz.mobility,
-                         by = c('cz' = 'cz1990'))
+cz.geo <- geojson_read("cz_geo.geojson",
+                        what = "sp")
+```
 
+Making the map actually display data:
+```{r}
+bins1 <- c(1, 5, 10, 20, 40, 60, 90)
+        
+colors1 <- colorBin(bins = bins1,
+                    palette = "YlOrRd",
+                    domain = cz.geo@data$ncollege)
+        
 cz.geo %>%
   leaflet() %>%
-  addPolygons() %>%
-  setView(-96, 37.8, 3)
+  addTiles() %>%
+  addPolygons(fillColor = ~colors1(cz.geo@data$ncollege),
+              weight = 1,
+              color = "white",
+              opacity = 0.5,
+              fillOpacity = .7) %>%
+  setView(-96, 37.8, 3) %>%
+  addLegend(pal = colors1,
+            values = cz.geo@data$ncollege,
+            title = "Number of Colleges in Commuting Zone")
+
+
 ```
+
 
 Try to run some lms:
 
@@ -267,7 +299,69 @@ htmtable.nelite <- stargazer(nelite.p1, nelite.p25, nelite.p50, nelite.p75, neli
           out = "nelitetable.html")
 summary(lm.nelite.p1)
 ```
+image print cheeeeck:
+```{r}
+tables <- data.frame(tablename = c("hascollege_black",
+                                "hascollege_kfr",
+                                "hascollege_top20",
+                                "hascollege_white",
+                                "ncollege_black",
+                                "ncollege_kfr",
+                                "ncollege_top20",
+                                "ncollege_white",
+                                "nelite_black",
+                                "nelite_kfr",
+                                "nelite_top20",
+                                "nelite_white",
+                                "nfouryr_black",
+                                "nfouryr_kfr",
+                                "nfouryr_top20",
+                                "nfouryr_white",
+                                "nfouryrpriv_black",
+                                "nfouryrpriv_kfr",
+                                "nfouryrpriv_top20",
+                                "nfouryrpriv_white",
+                                "npub_black",
+                                "npub_kfr",
+                                "npub_top20",
+                                "npub_white",
+                                "sumstats"),
+                     picture = c("C:\\\\Users\\neris\\OneDrive - Middlebury College\\Last Semester\\ECON Inequality & Justice\\econ0401\\hascollege_black.png",
+                                 "C:\\Users\\neris\\OneDrive - Middlebury College\\Last Semester\\ECON Inequality & Justice\\econ0401\\hascollege_kfr.png",
+                                 "C:\\Users\\neris\\OneDrive - Middlebury College\\Last Semester\\ECON Inequality & Justice\\econ0401\\hascollege_top20.png",
+                                 "C:\\Users\\neris\\OneDrive - Middlebury College\\Last Semester\\ECON Inequality & Justice\\econ0401\\hascollege_white.png",
+                                 "C:\\Users\\neris\\OneDrive - Middlebury College\\Last Semester\\ECON Inequality & Justice\\econ0401\\ncollege_black.png",
+                                 "C:\\Users\\neris\\OneDrive - Middlebury College\\Last Semester\\ECON Inequality & Justice\\econ0401\\ncollege_kfr.png",
+                                 "C:\\Users\\neris\\OneDrive - Middlebury College\\Last Semester\\ECON Inequality & Justice\\econ0401\\ncollege_top20.png",
+                                 "C:\\Users\\neris\\OneDrive - Middlebury College\\Last Semester\\ECON Inequality & Justice\\econ0401\\ncollege_white.png",
+                                 "C:\\Users\\neris\\OneDrive - Middlebury College\\Last Semester\\ECON Inequality & Justice\\econ0401\\nelite_black.png",
+                                 "C:\\Users\\neris\\OneDrive - Middlebury College\\Last Semester\\ECON Inequality & Justice\\econ0401\\nelite_kfr.png",
+                                 "C:\\Users\\neris\\OneDrive - Middlebury College\\Last Semester\\ECON Inequality & Justice\\econ0401\\nelite_top20.png",
+                                 "C:\\Users\\neris\\OneDrive - Middlebury College\\Last Semester\\ECON Inequality & Justice\\econ0401\\nelite_white.png",
+                                 "C:\\Users\\neris\\OneDrive - Middlebury College\\Last Semester\\ECON Inequality & Justice\\econ0401\\nfouryr_black.png",
+                                 "C:\\Users\\neris\\OneDrive - Middlebury College\\Last Semester\\ECON Inequality & Justice\\econ0401\\nfouryr_kfr.png",
+                                 "C:\\Users\\neris\\OneDrive - Middlebury College\\Last Semester\\ECON Inequality & Justice\\econ0401\\nfouryr_top20.png",
+                                 "C:\\Users\\neris\\OneDrive - Middlebury College\\Last Semester\\ECON Inequality & Justice\\econ0401\\nfouryr_white.png",
+                                 "C:\\Users\\neris\\OneDrive - Middlebury College\\Last Semester\\ECON Inequality & Justice\\econ0401\\nfouryrpriv_black.png",
+                                 "C:\\Users\\neris\\OneDrive - Middlebury College\\Last Semester\\ECON Inequality & Justice\\econ0401\\nfouryrpriv_kfr.png",
+                                 "C:\\Users\\neris\\OneDrive - Middlebury College\\Last Semester\\ECON Inequality & Justice\\econ0401\\nfouryrpriv_top20.png",
+                                 "C:\\Users\\neris\\OneDrive - Middlebury College\\Last Semester\\ECON Inequality & Justice\\econ0401\\nfouryrpriv_white.png",
+                                 "C:\\Users\\neris\\OneDrive - Middlebury College\\Last Semester\\ECON Inequality & Justice\\econ0401\\npub_black.png",
+                                 "C:\\Users\\neris\\OneDrive - Middlebury College\\Last Semester\\ECON Inequality & Justice\\econ0401\\npub_kfr.png",
+                                 "C:\\Users\\neris\\OneDrive - Middlebury College\\Last Semester\\ECON Inequality & Justice\\econ0401\\npub_top20.png",
+                                 "C:\\Users\\neris\\OneDrive - Middlebury College\\Last Semester\\ECON Inequality & Justice\\econ0401\\npub_white.png",
+                                 "C:\\Users\\neris\\OneDrive - Middlebury College\\Last Semester\\ECON Inequality & Justice\\econ0401\\sumstats.png"))
+tables$tablename <- as.character(tables$tablename)
+tables$picture <- as.character(tables$picture)
 
+# write_csv(tables, "outputtables.csv")
+
+tables %>%
+  ggplot() +
+  geom_bar(stat = "identity") +
+  geom_image(aes(image = picture),
+             size = .2)
+```
 
 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
