@@ -20,10 +20,11 @@ library(geojsonio)
 library(leaflet)
 library(rgdal)
 library(haven)
+library(stargazer)
 ```
 
 Data:
-```{r data, results = "markup"}
+```{r data, include = FALSE}
 # GDP up to Feb 2020
 # https://ihsmarkit.com/products/us-monthly-gdp-index.html
 gdp.index.data <- readxl::read_xlsx('US-Monthly-GDP-History-Data.xlsx', sheet = 3)
@@ -127,10 +128,10 @@ test %>%
 College Proximity Question 5/3:
 (Reading in Ivy's data)
 ```{r read proximity data, results = "markup"}
-cz_college <- read_dta("cz_college.dta")
+# cz_college <- read_dta("cz_college.dta")
 cz <- read_dta('cz.dta')
-colleges <- read_dta('colleges.dta')
-mobility.results <- read_xlsx('mobility_results.xlsx')
+# colleges <- read_dta('colleges.dta')
+# mobility.results <- read_xlsx('mobility_results.xlsx')
 ```
 
 Read in/create mobility data:
@@ -146,15 +147,17 @@ mobility.1986$`Commuting Zone` <- as.numeric(mobility.1986$`Commuting Zone`)
 cz.mobility.data <- full_join(mobility.1986[, c(1, 3:8)],
                   cz,
                   by = c(`Commuting Zone` = 'cz'))
+
 cz.mobility <- cz.mobility.data[, c(1:8, 2132:2137)]
 cz.mobility <- cz.mobility[, c(1, 8, 9:14, 3:7, 2)]
-# write_csv(cz.mobility, 'cz.mobility.csv')
+write_csv(cz.mobility, 'cz.mobility.csv')
+cz.mobility <- read_csv('cz.mobility.csv')
 ```
 
 Read in geojson file:
 ```{r geojson}
-# cz.geojson <- geojson_read("cz1990.json",
-#                        what = "sp")
+cz.geojson <- geojson_read("cz1990.json",
+                        what = "sp")
 # View(cz.geojson@data)
 cz.geojson %>%
   leaflet() %>%
@@ -165,7 +168,7 @@ cz.geojson %>%
 
 Commuting zones on the map (cz.geojson@data) are in 1990s format. They need to be converted so our post-2000 data can be connected to the shapefiles:
 (https://www.ers.usda.gov/data-products/commuting-zones-and-labor-market-areas/)
-```{r cz shape combine, include=FALSE}
+```{r cz shape combine, include = FALSE}
 cz.conversions <- read_xls('cz00_eqv_v1.xls')
 cz.conversions <- cz.conversions[, c(2:4)]
 cz.conversions$`Commuting Zone ID, 1990` <- as.numeric(cz.conversions$`Commuting Zone ID, 1990`)
@@ -184,15 +187,80 @@ cz.geo@data <- left_join(cz.geo@data,
 cz.geo@data <- left_join(cz.geo@data,
                          cz.mobility,
                          by = 'cz2000')
-# writeOGR(cz.geo, 'cz.geo', layer = 'cz.geo', driver = 'GeoJSON')
-
 ```
 
 Try to run some lms:
 
-```{r}
-lm1 <- lm()
+  Ivy's STATA code:
 
+    foreach x of varlist ncollege nfouryr nfouryrpriv npub nelite hascollege{
+    	
+    foreach y of varlist kfr_pooled_pooled_p1 kfr_pooled_pooled_p25 kfr_pooled_pooled_p50 kfr_pooled_pooled_p75 kfr_pooled_pooled_p100 {
+    	reg `y' `x' popdensity2010 med_hhinc2016, r 
+    	outreg2 using `x'_kfr, excel append ctitle(`y')
+    }
+    
+  Variables of interest:
+  
+```{r}
+yvar1 <- "kfr_pooled_pooled_p1"
+xvars1 <- c("ncollege", "nfouryr", "nfouryrpriv", "npub", "nelite", "hascollege", "popdensity2010", "med_hhinc2016")
+cz1 <- cz[, c(yvar1, xvars1)]
+
+lm.model1 <- as.formula(paste0(yvar1, " ~ ", paste0(xvars1, collapse =  " + ")))
+
+```
+
+testing?
+```{r}
+lm.kfr_p1 <- lm(lm.model1,
+                data = cz)
+summary(lm.kfr_p1)
+
+stargazer(cz1, type = "text", title="Descriptive statistics", digits=1, out="table1.txt")
+
+stargazer(lm.kfr_p1,
+          type = "text",
+          dep.var.labels = c("kfr_pooled_pooled_p1"))
+ #          ,
+ #          covariate.labels = c("Gross horsepower", "Rear axle ratio","Four foward gears",
+ # "Five forward gears","Type of transmission (manual=1)"), out="models.txt")
+
+
+```
+
+nelite on kfr at different levels
+```{r}
+yvar.p1 <- "kfr_pooled_pooled_p1"
+yvar.p25 <- "kfr_pooled_pooled_p25"
+yvar.p50 <- "kfr_pooled_pooled_p50"
+yvar.p75 <- "kfr_pooled_pooled_p75"
+yvar.p100 <- "kfr_pooled_pooled_p100"
+xvars.nelite <- c("nelite", "popdensity2010", "med_hhinc2016")
+lm.nelite.p1 <- as.formula(paste0(yvar.p1, " ~ ", paste0(xvars.nelite, collapse =  " + ")))
+lm.nelite.p25 <- as.formula(paste0(yvar.p25, " ~ ", paste0(xvars.nelite, collapse =  " + ")))
+lm.nelite.p50 <- as.formula(paste0(yvar.p50, " ~ ", paste0(xvars.nelite, collapse =  " + ")))
+lm.nelite.p75 <- as.formula(paste0(yvar.p75, " ~ ", paste0(xvars.nelite, collapse =  " + ")))
+lm.nelite.p100 <- as.formula(paste0(yvar.p100, " ~ ", paste0(xvars.nelite, collapse =  " + ")))
+nelite.p1 <- lm(lm.nelite.p1, cz)
+nelite.p25 <- lm(lm.nelite.p25, cz)
+nelite.p50 <- lm(lm.nelite.p50, cz)
+nelite.p75 <- lm(lm.nelite.p75, cz)
+nelite.p100 <- lm(lm.nelite.p100, cz)
+txttable.nelite <- stargazer(nelite.p1, nelite.p25, nelite.p50, nelite.p75, nelite.p100,
+          type = "text",
+          title = "The Effect of Elite Colleges in Commuting Zone on the Probability that a Child from the 20th Percentile Falls in Each Income Percentile as an Adult",
+          dep.var.caption = "Parent Income Percentile",
+          dep.var.labels = c("Bottom 1%", "25%", "50%", "75%", "Top 1%"),
+          # notes = "Where nelite is the number of elite colleges in commuting zone (cz), popdensity2010 is the cz's popultion density, and med_hhinc2016 is the median household income in cz in 2016.",
+          # notes.append = TRUE,
+          # notes.align = "l",
+          out = "nelitetable.txt")
+htmtable.nelite <- stargazer(nelite.p1, nelite.p25, nelite.p50, nelite.p75, nelite.p100,
+          type = "html",
+          dep.var.labels = c("Bottom 1%", "25%", "50%", "75%", "Top 1%"),
+          out = "nelitetable.html")
+summary(lm.nelite.p1)
 ```
 
 
