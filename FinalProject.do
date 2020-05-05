@@ -14,6 +14,8 @@ global OUTPUT "$dir\OUTPUT"
 
 cd "$DATA"
 
+*** NOTE TO CHICA - ignore everything from here until line 160 ****
+
 
 * edit and merge the data into one dataset
 local create = 0
@@ -91,7 +93,8 @@ save "cz.dta", replace
 }
 
 ******* Investigation of Absolute Income Differences ***************
-
+local try = 0
+if `try' == 1{
 ** look at the percent to dollar crosswalks
 use "pctile_to_dollar_cw.dta", clear
 
@@ -153,6 +156,8 @@ graph export "mobilitybyTier.png", as(png) replace
 twoway (scatter absmeddiff par_median) (lfit absmeddiff par_median), by(mytier)
 graph export "mobilityParentbyTier.png", as(png) replace
 
+}
+
 
 ****************** Summary Figures and Tables ??? *************************
 cd "$DATA"
@@ -164,26 +169,32 @@ use "cz.dta", clear
 
 * p1 = lowest percentile, p100 is the highest percentile
 
-* mr_k5_pq1 = mobility rate, pct students who have parents in bottom 20% who reach the top 20%
-* mr_ktop_pq1 = mobility rate, pct students who have parents in bottom 20% who reach the top 1%
+* create a summary stats table
 
-* kq5_cond_parq1 = pct children who reach top 20% out of children with parents from bottom 20%
-
-* ktop1pc_cond_parq1 = pct children who reach top 1% out of childrwith parents from bottom 20%
+cd "$OUTPUT"
+outreg2 using sumstats, excel replace sum(log) keep(kfr_pooled_pooled_p1 kfr_pooled_pooled_p25 kfr_pooled_pooled_p50 kfr_pooled_pooled_p75 kfr_pooled_pooled_p100 kfr_top20_pooled_pooled_p50 coll_pooled_pooled_mean  popdensity2010 med_hhinc2016 ncollege nfouryr nfouryrpriv npub nelite)
 
 
-* remove some of these for final table - do a control treat kind of thing or overall sum stats?
-sum kir_pooled_pooled_mean kfr_pooled_pooled_mean par_rank_pooled_pooled_mean proginc_pooled_pooled_mean coll_pooled_pooled_mean lpov_nbh_pooled_pooled_mean staycz_pooled_pooled_mean poor_share2010 med_hhinc1990 med_hhinc2016 ncollege nfouryr nfouryrpriv npub nelite
+* make some figures - just playing around here but feel free to check them out
 
+* a scatterplot of kfr_pooled_pooled_mean(y), which is the predictedmean household income rank of children, and n college (x) with a line of best fit
+* I would probably use the median instead of the mean bc I think it's easier to interpret
 
-* figures 
 twoway (scatter kfr_pooled_pooled_mean ncollege) (lfit kfr_pooled_pooled_mean ncollege)
 
+* a scatterplot of kir_pooled_pooled_mean(y), which is the predicted mean individual income rank of children, and n college (x) with a line of best fit
+* I would probably use the median instead of the mean bc I think it's easier to interpret
+
 twoway (scatter kir_pooled_pooled_mean ncollege) (lfit kir_pooled_pooled_mean ncollege)
+
+* a scatterplot of lpov_nbh_pooled_pooled_mean(y) and n college (x) with a line of best fit
 
 twoway (scatter lpov_nbh_pooled_pooled_mean ncollege) (lfit lpov_nbh_pooled_pooled_mean ncollege)
 
 * play around with different combinations - so many possible combinations 
+* a scatterplot of kfr_black_pooled_p1 (y) and ncollege (x) with a line of best fit. 
+*The Y variable is predicted household income of black kids from the bottom 1%
+
 twoway (scatter kfr_black_pooled_p1 ncollege) (lfit kfr_black_pooled_p1 ncollege)
 
 
@@ -192,38 +203,69 @@ twoway (scatter kfr_black_pooled_p1 ncollege) (lfit kfr_black_pooled_p1 ncollege
 ssc install outreg2
 cd "$OUTPUT"
 
-* regressions using kfr, or the predicted mean percentile rank given parent income, as the dependent variable 
-global results "mobility_results"
+* in the output tables I uploaded, each file has the regressions for one X variable. There are 6 X variables in total (ncollege, nfouryr, nfouryrpriv, npub, nelite, and hascollege)
+* ex. the "ncollege.xlsx" file has the results for:
+* 1) kfr_pooled_pooled, 2) kfr_top20_pooled_pooled, 3) kfr_white_pooled, and 4) kfr_black_pooled
+* each sheet has 5 columns with regressions for each of the parental percentiles, 1) bottom 1, 2) 25%, 3) 50%, 4) 75%, 5) top percentile
+* so in total each file has 4 sheets with 5 regressions each.
 
-reg kfr_pooled_pooled_mean ncollege, r
-outreg2 using $results, excel replace ctitle(ncolleges)
 
-reg kfr_pooled_pooled_mean ncollege frac_coll_plus2010 popdensity2010 med_hhinc2016, r
-outreg2 using $results, excel append ctitle(ncolleges)
+*** 1 ***
+* regressions of Y =  kfr_pooled_pooled_[percentile = p1, p25, p50, p75, and p100], or the predicted mean percentile rank given parent income
+* on X = type of college (ncollege, nfouryr, nfouryrpriv, npub, nelite, and hascollege). For kids of all races and all genders
+* controls are population density 2010 and median household income 2016
+* the output is 6 separate sheets of 5 regressions each, one for each percentile of the variable
 
-foreach x of varlist nfouryr nfouryrpriv npub nelite hascollege {
-	reg kfr_pooled_pooled_mean `x', r
-	outreg2 using $results, excel append ctitle(`x')
+foreach x of varlist ncollege nfouryr nfouryrpriv npub nelite hascollege{
 	
-	reg kfr_pooled_pooled_mean `x' frac_coll_plus2010 popdensity2010 med_hhinc2016, r
-	outreg2 using $results, excel append ctitle(`x')
+foreach y of varlist kfr_pooled_pooled_p1 kfr_pooled_pooled_p25 kfr_pooled_pooled_p50 kfr_pooled_pooled_p75 kfr_pooled_pooled_p100 {
+	reg `y' `x' popdensity2010 med_hhinc2016, r 
+	outreg2 using `x'_kfr, excel append ctitle(`y')
+}
 
 }
 
-* regressions using kfr_top20, or probability of reaching the top 20%, as the dependent variable
-global results2 "mobility_results2"
+*** 2 ***
+* regressions of Y =  kfr_top20_pooled_pooled_[percentile = p1, p25, p50, p75, and p100], or the predicted probability 
+* that the child with parents from the given percentile rank make it to the top 20%
+* on X = type of college (ncollege, nfouryr, nfouryrpriv, npub, nelite, and hascollege). For kids of all races and all genders
+* controls are population density 2010 and median household income 2016
 
-reg kfr_top20_pooled_pooled_mean ncollege, r
-outreg2 using $results2, excel replace ctitle(ncolleges)
-
-reg kfr_top20_pooled_pooled_mean ncollege frac_coll_plus2010 popdensity2010 med_hhinc2016, r
-outreg2 using $results2, excel append ctitle(ncolleges)
-
-foreach x of varlist nfouryr nfouryrpriv npub nelite hascollege {
-	reg kfr_top20_pooled_pooled_mean `x', r
-	outreg2 using $results2, excel append ctitle(`x')
+foreach x of varlist ncollege nfouryr nfouryrpriv npub nelite hascollege{
 	
-	reg kfr_top20_pooled_pooled_mean `x' frac_coll_plus2010 popdensity2010 med_hhinc2016, r
-	outreg2 using $results2, excel append ctitle(`x')
+foreach y of varlist kfr_top20_pooled_pooled_p1 kfr_top20_pooled_pooled_p25 kfr_top20_pooled_pooled_p50 kfr_top20_pooled_pooled_p75 kfr_top20_pooled_pooled_p100 {
+	reg `y' `x' popdensity2010 med_hhinc2016, r 
+	outreg2 using `x'_kfrtop20, excel append ctitle(`y')
+}
 
 }
+
+
+*** 3 ***
+* regressions of Y =  kfr_white_pooled_[percentile = p1, p25, p50, p75, and p100], or the predicted mean percentile rank given parent income
+* on X = type of college (ncollege, nfouryr, nfouryrpriv, npub, nelite, and hascollege). For kids who are WHITE of all genders
+* controls are population density 2010 and median household income 2016
+
+foreach x of varlist ncollege nfouryr nfouryrpriv npub nelite hascollege{
+	
+foreach y of varlist kfr_white_pooled_p1 kfr_white_pooled_p25 kfr_white_pooled_p50 kfr_white_pooled_p75 kfr_white_pooled_p100 {
+	reg `y' `x' popdensity2010 med_hhinc2016, r 
+	outreg2 using `x'_kfr_white, excel append ctitle(`y')
+}
+
+}
+
+*** 4 ***
+* regressions of Y =  kfr_black_pooled_[percentile = p1, p25, p50, p75, and p100], or the predicted mean percentile rank given parent income
+* on X = type of college (ncollege, nfouryr, nfouryrpriv, npub, nelite, and hascollege). For kids who are BLACK of all genders
+* controls are population density 2010 and median household income 2016
+
+foreach x of varlist ncollege nfouryr nfouryrpriv npub nelite hascollege{
+	
+foreach y of varlist kfr_black_pooled_p1 kfr_black_pooled_p25 kfr_black_pooled_p50 kfr_black_pooled_p75 kfr_black_pooled_p100 {
+	reg `y' `x' popdensity2010 med_hhinc2016, r 
+	outreg2 using `x'_kfr_black, excel append ctitle(`y')
+}
+
+}
+
