@@ -1,9 +1,6 @@
-library(shiny)
-
-
-
 # libraries ---------------------------------------------------------------
 
+library(shiny)
 library(tidyverse)
 library(readr)
 library(rvest)
@@ -24,43 +21,33 @@ library(haven)
 
 # read data ---------------------------------------------------------------
 
-# cz.mobility <- read_csv('cz.mobility.csv')
-# 
-# cz.geojson <- geojson_read("cz1990.json",
-#                            what = "sp")
-# 
-# cz.conversions <- read_xls('cz00_eqv_v1.xls')
+setwd("C:/Users/neris/OneDrive - Middlebury College/Last Semester/ECON Inequality & Justice/econ0401")
+
+cz.geo <- geojson_read("cz_geo.geojson",
+                       what = "sp")
+
+cz <- read_dta('cz.dta')
 
 
 
-# Converting geo cz1990 to cz2000 and adding cz to geo --------------------
+# Create input choices ----------------------------------------------------
 
-# cz.conversions <- cz.conversions[, c(2:4)]
-# cz.conversions$`Commuting Zone ID, 1990` <- as.numeric(cz.conversions$`Commuting Zone ID, 1990`)
-# cz.conversions$`Commuting Zone ID, 1980` <- as.numeric(cz.conversions$`Commuting Zone ID, 1980`)
-# colnames(cz.conversions)[2] <- 'cz1990'
-# colnames(cz.conversions)[1] <- 'cz2000'
-# colnames(cz.conversions)[3] <- 'cz1980'
-# 
-# head(cz.geojson@data)
-# cz.geo <- cz.geojson
-# colnames(cz.mobility)[1] <- 'cz2000'
-# 
-# cz.geo@data <- left_join(cz.geo@data,
-#                          cz.conversions[, -3],
-#                          by = c('cz' = 'cz1990'))
-# cz.geo@data <- left_join(cz.geo@data,
-#                          cz.mobility,
-#                          by = 'cz2000')
+mapinputs <- c("Number of Colleges", "Number of Elite Colleges", 
+                "Number of Public 2-year and 4-year Colleges")
+mapmatches <- c("ncollege", "nelite", "npub")
+mapchoices <- data.frame(mapinputs, mapmatches)
 
-
+# App ---------------------------------------------------------------------
 
 ui <- fluidPage(
   
   titlePanel("College Proximity and Mobility in the U.S."),
   mainPanel(
     tabsetPanel(
-      tabPanel("Tab1", 
+      tabPanel("Tab1",
+               selectInput(inputId = "input1",
+                           label = "Select a City",
+                           choices = mapinputs),
                leafletOutput(outputId = "map1", width = "150%")), 
       tabPanel("Tab2", 
                dataTableOutput(outputId = "table1"))),
@@ -72,14 +59,31 @@ server <- function(input, output) {
   
   output$map1 <- renderLeaflet({
     
-    cz.geojson <- geojson_read("cz1990.json",
-                               what = "sp")
-    # View(cz.geojson@data)
-    cz.geojson %>%
+    title1 <- input1
+    
+    mapchoice <- mapchoices %>%
+      filter(mapinputs == input1)
+    
+    mapvar <- mapchoice[2]
+    
+    bins1 <- c(1, 5, 10, 20, 40, 60, 90)
+    
+    colors1 <- colorBin(bins = bins1,
+                        palette = "YlOrRd",
+                        domain = cz.geo@data$mapvar)
+    
+    cz.geo %>%
       leaflet() %>%
-      #addTiles() %>%
-      addPolygons() %>%
-      setView(-96, 37.8, 3)
+      addTiles() %>%
+      addPolygons(fillColor = ~colors1(cz.geo@data$mapvar),
+                  weight = 1,
+                  color = "white",
+                  opacity = 0.5,
+                  fillOpacity = .7) %>%
+      setView(-96, 37.8, 3) %>%
+      addLegend(pal = colors1,
+                values = cz.geo@data$mapvar,
+                title = input1)
     
   })
   
