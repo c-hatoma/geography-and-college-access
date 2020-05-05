@@ -137,20 +137,20 @@ cz <- read_dta('cz.dta')
 Read in/create mobility data:
 (Trends in Mobility: Commuting Zone Intergenerational Mobility Estimates by Birth Cohort)
 https://opportunityinsights.org/data/?geographic_level=101&topic=0&paper_id=0#resource-listing
-```{r mobility data}
-mobility.data <- read_xls('onlinedata1_trends.xls')
-colnames(mobility.data) <- mobility.data[15, ]
-mobility <- mobility.data[-c(1:16), ]
-mobility.1986 <- mobility %>%
-  filter(`Birth Cohort` == 1986)
-mobility.1986$`Commuting Zone` <- as.numeric(mobility.1986$`Commuting Zone`)
-cz.mobility.data <- full_join(mobility.1986[, c(1, 3:8)],
-                  cz,
-                  by = c(`Commuting Zone` = 'cz'))
-
-cz.mobility <- cz.mobility.data[, c(1:8, 2132:2137)]
-cz.mobility <- cz.mobility[, c(1, 8, 9:14, 3:7, 2)]
-write_csv(cz.mobility, 'cz.mobility.csv')
+```{r mobility data, include=FALSE}
+# mobility.data <- read_xls('onlinedata1_trends.xls')
+# colnames(mobility.data) <- mobility.data[15, ]
+# mobility <- mobility.data[-c(1:16), ]
+# mobility.1986 <- mobility %>%
+#   filter(`Birth Cohort` == 1986)
+# mobility.1986$`Commuting Zone` <- as.numeric(mobility.1986$`Commuting Zone`)
+# cz.mobility.data <- full_join(mobility.1986[, c(1, 3:8)],
+#                   cz,
+#                   by = c(`Commuting Zone` = 'cz'))
+# 
+# cz.mobility <- cz.mobility.data[, c(1:8, 2132:2137)]
+# cz.mobility <- cz.mobility[, c(1, 8, 9:14, 3:7, 2)]
+# write_csv(cz.mobility, 'cz.mobility.csv')
 cz.mobility <- read_csv('cz.mobility.csv')
 ```
 
@@ -159,11 +159,11 @@ Read in geojson file:
 cz.geojson <- geojson_read("cz1990.json",
                         what = "sp")
 # View(cz.geojson@data)
-cz.geojson %>%
-  leaflet() %>%
-  #addTiles() %>%
-  addPolygons() %>%
-  setView(-96, 37.8, 3)
+# cz.geojson %>%
+#   leaflet() %>%
+#   #addTiles() %>%
+#   addPolygons() %>%
+#   setView(-96, 37.8, 3)
 ```
 
 Commuting zones on the map (cz.geojson@data) are in 1990s format. They need to be converted so our post-2000 data can be connected to the shapefiles:
@@ -179,14 +179,19 @@ colnames(cz.conversions)[3] <- 'cz1980'
 
 head(cz.geojson@data)
 cz.geo <- cz.geojson
-colnames(cz.mobility)[1] <- 'cz2000'
+colnames(cz.mobility)[1] <- 'cz1990'
 
-cz.geo@data <- left_join(cz.geo@data,
+cz.geo@data <- full_join(cz.geo@data,
                   cz.conversions[, -3],
                   by = c('cz' = 'cz1990'))
 cz.geo@data <- left_join(cz.geo@data,
                          cz.mobility,
-                         by = 'cz2000')
+                         by = c('cz' = 'cz1990'))
+
+cz.geo %>%
+  leaflet() %>%
+  addPolygons() %>%
+  setView(-96, 37.8, 3)
 ```
 
 Try to run some lms:
