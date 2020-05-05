@@ -57,7 +57,11 @@ cz.geo@data <- left_join(cz.geo@data,
 
 ui <- fluidPage(
   navbarPage("College and Inequality",
-             tabPanel("Intro"),
+             tabPanel("Intro",
+                      mainPanel(
+                        h2("Welcome!"),
+                        p("think more about what you want to write and put it here")
+                      )),
              tabPanel("Data"),
              tabPanel("Results"), 
              tabPanel("Maps",
@@ -70,6 +74,7 @@ ui <- fluidPage(
                              leafletOutput(outputId = "map2", width = "150%"))),
                  )
              ),
+             tabPanel("Conclusion"),
              tabPanel("About",
                     mainPanel(
                       h2("About the Project"),
@@ -78,16 +83,21 @@ ui <- fluidPage(
                       br(),
                       h2("About Us"),
                       p("Chica Morrow and Ivy Yang are two senior economics majors at Middlebury College. 
-                         Chica likes trains, urban planning, and Gwyneth Paltrow. Ivy is currently social distancing at her family's home outside of Boston losing her mind."),
+                         Chica likes trains and urban planning. Ivy likes the smell of rain and ice cream."),
                       br(),
                       h2("References"),
                       p("Chetty, Raj, et. al. All Outcomes by Commuting Zone, Race, Gender and Parental Income Percentile. Opportunity Insights. 2018."),
                       a("https://opportunityinsights.org/data/?geographic_level=0&topic=0&paper_id=1652#resource-listing"),
                       p("Chetty, Raj, et. al. Mobility Report Cards: The Role of Colleges in Intergenerational Mobility. Opportunity Insights. 2017."),
                       a("https://opportunityinsights.org/data/?geographic_level=0&topic=0&paper_id=536#resource-listing"),
+                      p("Currie, Janet and Enrico Moretti. Mother's Education and the Intergenerational Transmission of Human Capital: Evidence from College Openings. The Quarterly Journal of Economics, Volume 118, Issue 4, November 2003. Pages 1495–1532. https://doi.org/10.1162/003355303322552856"),
+                      p("Greenstone, Michael, Adam Looney, Jeremey Pastashnik, and Muxin Yu. “Thirteen Economic Facts about Social Mobility and the Role of Education.” The Brookings Institution. June 26, 2013."),
+                      a("https://www.brookings.edu/research/thirteen-economic-facts-about-social-mobility-and-the-role-of-education/#cancel"),
+                      p("Wilkinson, Richard and Kate Pickett. The Spirit Level. New York: Bloomsbury Press, 2009."),
+                      
                       br(),
                       h2("Acknowledgements"),
-                      p("We would like to thank Professor Matthews for his support and guidance throughout this project as well as during the entire semester.")
+                      p("We would like to thank Professor Matthews for his support and guidance throughout this project and during the entire semester.")
                       
                     ) )
   )
