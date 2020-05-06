@@ -3,24 +3,18 @@
 
 library(shiny)
 library(tidyverse)
-# library(readr)
 library(rvest)
 library(stats)
 library(readxl)
 library(dplyr)
-# library(stringr)
 library(ggplot2)
 library(ggthemes)
 library(geojsonio)
 library(leaflet)
-# library(rgdal)
-# library(haven)
 library(ggimage)
 
 
 # read data ---------------------------------------------------------------
-
-setwd("C:/Users/neris/OneDrive - Middlebury College/Last Semester/ECON Inequality & Justice/econ0401")
 
 cz.geo <- geojson_read("cz_geo.geojson",
                        what = "sp")
