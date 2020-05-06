@@ -411,6 +411,71 @@ plot(lm1)
 
 
 
+Wait lemme try the long format thing:
+
+```{r}
+kfr.cols <- c("kfr_black_pooled_p1", "kfr_black_pooled_p25", "kfr_black_pooled_p50", "kfr_black_pooled_p75", "kfr_black_pooled_p100", "kfr_pooled_pooled_p1", "kfr_pooled_pooled_p25", "kfr_pooled_pooled_p50", "kfr_pooled_pooled_p75", "kfr_pooled_pooled_p100", "kfr_white_pooled_p1", "kfr_white_pooled_p25", "kfr_white_pooled_p50", "kfr_white_pooled_p75", "kfr_white_pooled_p100")
+
+kfr.test <- cz[, c(kfr.cols, "ncollege", "nfouryr", "nelite", "npub", "popdensity2010", "med_hhinc2016")]
+
+keycol1 <- "category"
+valuecol1 <- "kfr"
+gathercols1 <- kfr.cols
+
+data_long <- gather_(kfr.test, keycol1, valuecol1, gathercols1)
+
+data_longa <- data_long %>%
+  filter(str_detect(data_long$category, "black", negate = FALSE)) %>%
+  mutate(race = "black")
+
+data_longa$category <- data_longa$category %>%
+  str_replace_all("kfr_black_pooled_p1", "1") %>%
+  str_replace_all("kfr_black_pooled_p25", "25") %>%
+  str_replace_all("kfr_black_pooled_p50", "50") %>%
+  str_replace_all("kfr_black_pooled_p75", "75") %>%
+  str_replace_all("kfr_black_pooled_p100", "100")
+
+data_longb <- data_long %>%
+  filter(str_detect(data_long$category, "white", negate = FALSE)) %>%
+  mutate(race = "white")
+
+data_longb$category <- data_longb$category %>%
+  str_replace_all("kfr_white_pooled_p1", "1") %>%
+  str_replace_all("kfr_white_pooled_p25", "25") %>%
+  str_replace_all("kfr_white_pooled_p50", "50") %>%
+  str_replace_all("kfr_white_pooled_p75", "75") %>%
+  str_replace_all("kfr_white_pooled_p100", "100")
+
+data_longc <- data_long %>%
+  filter(str_detect(data_long$category, "pooled_pooled", negate = FALSE)) %>%
+  mutate(race = "pooled")
+
+data_longc$category <- data_longc$category %>%
+  str_replace_all("kfr_pooled_pooled_p1", "1") %>%
+  str_replace_all("kfr_pooled_pooled_p25", "25") %>%
+  str_replace_all("kfr_pooled_pooled_p50", "50") %>%
+  str_replace_all("kfr_pooled_pooled_p75", "75") %>%
+  str_replace_all("kfr_pooled_pooled_p100", "100")
+
+long.data1 <- rbind(data_longa, data_longb,
+                    data_longc) 
+
+long.data1a <- long.data1 %>%
+  mutate(black = ifelse(race == "black",
+                        TRUE,
+                        FALSE),
+         white = ifelse(race == "white",
+                        TRUE,
+                        FALSE))
+
+long.lm1 <- lm(kfr ~ ncollege + black + white + popdensity2010 + med_hhinc2016,
+   data = long.data1a)
+summary(long.lm1)
+
+```
+
+
+
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
 
 When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
