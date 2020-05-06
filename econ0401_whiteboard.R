@@ -177,6 +177,18 @@ test %>%
 ### Ivy testing random shit
 
 
-
+final.data %>%
+  group_by(race, ncollege) %>% 
+  summarise(meanpredict = mean(predictions)) %>%
+  ggplot(aes(x = ncollege,
+             y = meanpredict)) +
+  geom_line(aes(color = factor(race)),
+            size = 1.5) +
+  theme_economist() +
+  theme(plot.title = element_text(hjust = 0, size = 10, face = "bold")) +
+  scale_color_brewer(palette = "YlOrRd") +
+  ylab("Household Income Percentile Rank") +
+  ggtitle("Effect of Number of Colleges in CZ on Household Income Percentile Rank by Race") + 
+  labs(color = "")
 
 

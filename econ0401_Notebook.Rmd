@@ -21,6 +21,7 @@ library(leaflet)
 library(rgdal)
 library(haven)
 library(stargazer)
+library(RColorBrewer)
 ```
 
 Data:
@@ -472,8 +473,61 @@ long.lm1 <- lm(kfr ~ ncollege + black + white + popdensity2010 + med_hhinc2016,
    data = long.data1a)
 summary(long.lm1)
 
+# write_csv(long.data1a, "long_kfr.csv")
+# long.data1a <- read_csv('long_kfr.csv')
+
 ```
 
+Output table:
+```{r}
+stargazer(long.lm1,
+          type = "text")
+```
+
+Try with interaction & w/o hhinc:
+```{r}
+long.lm1.wohhinc <- lm(kfr ~ ncollege + black + white + popdensity2010,
+   data = long.data1a)
+long.lm1a <- lm(kfr ~ ncollege + black + white + black*ncollege + white*ncollege + popdensity2010 + med_hhinc2016,
+   data = long.data1a)
+summary(long.lm1a)
+```
+No significant difference. Will stick to original model.
+
+Visualize it maybe?:
+```{r}
+long.lm1.race <- lm(kfr ~ ncollege + race + popdensity2010 + med_hhinc2016,
+   data = long.data1a)
+
+ncollege.seq <- seq(from = 0, to = 82, by = 1)
+race.seq <- unique(long.data1a$race)
+popdensity2010.seq <- seq(from = 0.106, to = 5635.804, by = 300)
+med_hhinc2016.seq <- seq(from = 26645, to = 103043, by = 3750)
+grid1 <- expand.grid('ncollege' = ncollege.seq,
+                     'race' = race.seq,
+                     'popdensity2010'  = popdensity2010.seq,
+                     'med_hhinc2016' = med_hhinc2016.seq)
+predictions <- predict.lm(long.lm1.race,
+                          grid1)
+final.data <- data.frame(grid1, predictions)
+
+
+final.data %>%
+  group_by(race, ncollege) %>% 
+  summarise(meanpredict = mean(predictions)) %>%
+  ggplot(aes(x = ncollege,
+             y = meanpredict)) +
+  geom_line(aes(color = factor(race)),
+            size = 1.5) +
+  theme_economist() +
+  theme(plot.title = element_text(hjust = 0, size = 10, face = "bold")) +
+  scale_color_brewer(palette = "YlOrRd") +
+  ylab("Household Income Percentile Rank") +
+  ggtitle("Effect of Number of Colleges in CZ on Household Income Percentile Rank by Race") + 
+  labs(color = "")
+
+
+```
 
 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
