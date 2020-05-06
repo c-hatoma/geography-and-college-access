@@ -529,6 +529,25 @@ final.data %>%
 
 ```
 
+Making new image table:
+```{r}
+outputtables <- data.frame(tablename = c("Black Child Income Outcomes",
+                                   "White Child Income Outcomes",
+                                   "All Child Income Outcomes",
+                                   "All Child Probability of Reaching Top 20%"),
+                     path = c("C:\\Users\\neris\\OneDrive - Middlebury College\\Last Semester\\ECON Inequality & Justice\\econ0401\\black_combined.png",
+                              "C:\\Users\\neris\\OneDrive - Middlebury College\\Last Semester\\ECON Inequality & Justice\\econ0401\\white_combined.png",
+                              "C:\\Users\\neris\\OneDrive - Middlebury College\\Last Semester\\ECON Inequality & Justice\\econ0401\\kfr_combined.png",
+                              "C:\\Users\\neris\\OneDrive - Middlebury College\\Last Semester\\ECON Inequality & Justice\\econ0401\\top20_combined.png"),
+                     text = c("The table presents estimates of the effect of the number of colleges, four year, or public colleges on the mean predicted income rank of Black children with parent income percentile as defined by the column headers. Controls are population density and median household income. The results suggest that having any college or a public college nearby has a slightly negative effect for children from below the median but has less effect on children from above the median, and four year colleges have no significant effect at all. Although statistically significant, the largest coefficient is the effect of number of public colleges on the top 1%, which is -0.0041, or 2.7% of a standard deviation, which is rather small.",
+                              "The table presents estimates of the effect of the number of colleges, four year, or public colleges on the mean predicted income rank of white children with parent income percentile as defined by the column headers. Controls are population density and median household income. The results suggest that having any college or a four year college nearby have little to no effect on income rank, and but that public colleges may have a slightly negative effect for those at the 75th percentile and below. Although statistically significant, the largest coefficient is the effect of number of public colleges on the bottom 1%, which is -0.0053, or 7.7% of a standard deviation, which is rather small. ",
+                              "The table presents estimates of the effect of the number of colleges, four year, or public colleges on the mean predicted income rank of children with parent income percentile as defined by the column headers. Controls are population density and median household income. The results suggest that having a college nearby has a slightly negative effect for children from below the median but has less effect on children from above the median. Although statistically significant, the largest coefficient is the effect of number of public colleges on the bottom 1%, which is -0.0068, or 9.3% of a standard deviation, which is rather small. This means that with an increase of one public school, the mean percentile rank is predicted to decrease by 0.68 percentage points.",
+                              "The table presents estimates of the effect of the number of colleges, four year, or public colleges on the mean predicted probability that a child with parents from a given income percentile reaches the top income quintile. Controls are population density and median household income.  The results suggest that having a college nearby has a slightly negative effect for children from below the median but has less effect on children from above the median, with number of public colleges having the greatest effect. Although statistically significant, the largest coefficient is the effect of number of public colleges on the bottom 1%, which is -0.0039, or only 7.3% of a standard deviation."))
+
+# write_csv(outputtables, "regouttables.csv")
+
+```
+
 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
 
