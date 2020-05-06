@@ -356,12 +356,59 @@ tables$picture <- as.character(tables$picture)
 
 # write_csv(tables, "outputtables.csv")
 
-tables %>%
-  ggplot() +
-  geom_bar(stat = "identity") +
-  geom_image(aes(image = picture),
-             size = .2)
+# tables %>%
+#   ggplot() +
+#   geom_bar(stat = "identity") +
+#   geom_image(aes(image = picture),
+#              size = .2)
 ```
+
+
+Plotting the lms:
+
+```{r}
+lm1 <- lm(kfr_pooled_pooled_mean ~ ncollege + popdensity2010 + med_hhinc2016,
+   data = cz)
+ncollege.seq <- seq(from = 0, to = 82, by = 5)
+kfr_pooled_pooled_mean.seq <- seq(from = 0.2490857, to = 0.6728090, by = .025)
+popdensity2010.seq <- seq(from = 0.106, to = 5635.804, by = 300)
+med_hhinc2016.seq <- seq(from = 26645, to = 103043, by = 3750)
+grid1 <- expand.grid('ncollege' = ncollege.seq,
+                     'kfr_pooled_pooled_mean' = kfr_pooled_pooled_mean.seq,
+                     'popdensity2010'  = popdensity2010.seq,
+                     'med_hhinc2016' = med_hhinc2016.seq)
+predictions <- predict.lm(lm1,
+                          grid1)
+final.data <- data.frame(grid1, predictions)
+
+final.data %>%
+  ggplot(aes(x = ncollege,
+             y = predictions)) +
+  geom_line() +
+  stat_smooth(aes(x = ncollege, y = predictions), method = "lm",
+              formula = y ~ kfr_pooled_pooled_mean ~ ncollege + popdensity2010 + med_hhinc2016, se = FALSE) +
+  theme_economist() +
+  scale_color_brewer(palette = "YlOrRd")
+
+ggplot(aes(x = plotx, y = ploty)) %>%
+  geom_abline()
+
+lm2 <- lm(kfr_black_pooled_p50 ~ ncollege + popdensity2010 + med_hhinc2016,
+   data = cz)
+lm3 <- lm(kfr_white_pooled_p50 ~ ncollege + popdensity2010 + med_hhinc2016,
+   data = cz)
+
+cz %>%
+  ggplot(aes(x = ncollege, y = kfr_pooled_pooled_mean)) +
+  geom_abline(intercept = 3.799e-01, slope = -8.572e-04) +
+  geom_abline(intercept = 3.523e-01, slope = -9.573e-04) +
+  geom_abline(intercept = 4.973e-01, slope = -9.133e-04) +
+  ylim(3.5e-01, 0.5)
+
+plot(lm1)
+
+```
+
 
 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
