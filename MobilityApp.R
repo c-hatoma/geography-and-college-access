@@ -45,6 +45,7 @@ ui <- fluidPage(
                radioButtons("map", "Select a Topic to Map:",
                             c("Number of Colleges in Commuting Zone", "Other")),
                leafletOutput(outputId = "map1", width = "150%")), 
+      tabPanel("Data"),
       tabPanel("Regression Outputs", 
                selectInput(inputId = "imagename",
                            label = "Select a Regression Output",
@@ -76,7 +77,11 @@ ui <- fluidPage(
   
 )))
 
+
+
 server <- function(input, output) {
+  
+# map outputs -------------------------------------------------------------
   
   output$map1 <- renderLeaflet({
     
@@ -124,7 +129,10 @@ server <- function(input, output) {
       
       }
     })
-  
+
+
+# Regression table outputs ------------------------------------------------
+    
   output$image1 <- renderImage({
     
     if (is.null(input$imagename))
